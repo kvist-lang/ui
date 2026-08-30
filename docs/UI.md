@@ -15,10 +15,10 @@ The package family has three parts:
   native contract.
 
 Both native packages are directly usable from Odin without Kvist. See
-[the language and package architecture](Architecture.md) for the intended
-Odin authoring facade and the criterion for adding language-specific DSLs.
+[the language and package architecture](Architecture.md) for the criterion
+for adding language-specific DSLs.
 
-## Descriptions
+## Kvist Hiccup descriptions
 
 View functions return ordinary immutable `Data`:
 
@@ -77,6 +77,72 @@ extra wrapper:
   ...)
 ```
 
+## Odin descriptions
+
+Odin components accept a `^ui.Builder` and return an arena-owned `ui.Node` by
+value. `ui.node` immediately copies its borrowed properties and actions into
+the builder; child nodes are values produced by the same builder:
+
+```odin
+import ui "deps/ui/reconcile"
+
+counter_view :: proc(builder: ^ui.Builder, label: string) -> ui.Node {
+    return ui.node(builder, ui.TAG_STACK, "counter", {
+        props = []ui.Property_Spec{
+            ui.property(
+                ui.PROP_ORIENTATION,
+                ui.keyword(ui.ORIENTATION_VERTICAL),
+            ),
+        },
+        children = []ui.Node{
+            ui.node(builder, ui.TAG_TEXT, "value", {
+                props = []ui.Property_Spec{
+                    ui.property(ui.PROP_TEXT, ui.text(label)),
+                },
+            }),
+            ui.node(builder, ui.TAG_BUTTON, "increment", {
+                props = []ui.Property_Spec{
+                    ui.property(ui.PROP_LABEL, ui.text("Increment")),
+                },
+                actions = []ui.Action_Spec{
+                    ui.action(
+                        ui.EVENT_ACTIVATE,
+                        ":counter/increment",
+                    ),
+                },
+            }),
+        },
+    })
+}
+```
+
+The render loop has one explicit description lifetime:
+
+```odin
+builder: ui.Builder
+ui.builder_init(&builder)
+defer ui.builder_destroy(&builder)
+
+view := counter_view(&builder, "0")
+assert(ui.node_valid(&view))
+assert(renderer_reconcile(&renderer, &view))
+ui.builder_reset(&builder)
+```
+
+Do not call `node_destroy` on builder-owned nodes or use them after reset. The
+reconciler and supplied headless renderer clone what they retain, so reset is
+safe immediately after reconciliation. A component may compose other
+components and return its `Node` because its strings and arrays live in the
+builder rather than its stack frame. Dynamic child collections can be assembled
+in an ordinary temporary `[dynamic]ui.Node` and passed to `ui.node` as a slice.
+
+`none`, `boolean`, `integer`, `decimal`, `text`, and `keyword` construct scalar
+values; `property` and `action` create borrowed authoring values. Standard
+tags, properties, events, and orientations have constants, but the underlying
+names remain strings so applications can add renderer-neutral or
+renderer-specific vocabulary. See the complete
+[Odin counter](../examples/odin-counter/main.odin).
+
 ## Reconciliation
 
 The native package is available to both Kvist and handwritten Odin:
@@ -125,3 +191,14 @@ contract and become nonlinear for very large flat trees. Keep large product
 collections behind native virtualization or windowing. The description API
 does not imply allocating a native widget for every item in a large logical
 collection.
+
+The repository includes a repeatable native microbenchmark for description
+construction and keyed reconciliation:
+
+```sh
+odin run benchmarks/builder -o:speed
+```
+
+It reports construction separately from construction plus reconciliation and
+uses alternating content to ensure the apply path is measured. It is an
+investigation tool rather than a machine-dependent pass/fail threshold.

@@ -50,17 +50,17 @@ reconciliation, lifecycle statistics, and the six-callback backend interface.
 `ui.kvist` is the Kvist facade. It validates Hiccup-shaped `Data`, flattens
 fragments, and establishes native ownership exactly once at the boundary.
 
-Odin programs can construct `Node` values today, but direct construction is a
-low-level API: callers must understand which strings and dynamic arrays are
-owned. Before presenting description authoring as polished for general Odin
-applications, the package should add:
+`reconcile/builder.odin` is the native authoring facade. Odin component
+procedures accept a builder and return `Node` by value, so components compose
+without returning slices into their stack frames. Properties, actions,
+strings, argument arrays, and child arrays live in one reusable dynamic arena.
+The application resets that arena after reconciliation and destroys it at
+shutdown. The reconciler's mounted copy has an independent lifetime.
 
-- safe property, action, child, and node construction;
-- a builder or arena with one obvious lifetime;
-- an idiomatic Odin example matching the Kvist counter;
-- memory-tracked construction, reset, reconciliation, and teardown tests;
-- optional vocabulary constants that preserve extensible string tags rather
-  than closing the language into a widget enum.
+The public vocabulary constants preserve strings as the extensibility
+boundary rather than closing tags into a widget enum. The Odin counter,
+memory-tracked construction/reset/reconciliation/teardown tests, and native
+microbenchmark exercise this authoring path without Kvist.
 
 The reconciler and backend interfaces remain the same whichever authoring path
 produces the next immutable description.

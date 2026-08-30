@@ -9,6 +9,8 @@ The decoder intentionally accepts any keyword tag and scalar properties. This
 keeps the package extensible: the vocabulary below is a portable convention,
 not a closed widget enum. Applications may add namespaced tags, while reusable
 views and backends should prefer these standard names where they fit.
+Odin callers may use the `TAG_*`, `PROP_*`, `EVENT_*`, and orientation constants
+from `reconcile/vocabulary.odin`; their values are the same strings shown here.
 
 ## Structure and presentation
 
