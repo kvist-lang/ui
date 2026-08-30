@@ -1,17 +1,22 @@
 # Declarative UI
 
-This package provides a small Replicant-shaped contract for describing
-retained user interfaces as data in Kvist. It is renderer-independent:
-applications choose their native, terminal, web, or test backend and retain
-ownership of product state and action interpretation.
+This package provides an Odin-native retained UI contract and a small
+Replicant-shaped layer for describing interfaces as data in Kvist. It is
+renderer-independent: applications choose their native, terminal, web, or
+test backend and retain ownership of product state and action interpretation.
 
 The package family has three parts:
 
-- `ui` provides the Hiccup decoder and `ui.for` fragment macro.
 - `ui/reconcile` provides the native `Node`, `Value`, `Action`, keyed
   reconciler, structural statistics, and six-callback backend contract.
 - `ui/headless` provides an optional deterministic instance tree for
   tests, REPL probes, and renderer-independent consumers.
+- `ui` provides the Kvist Hiccup decoder and `ui.for` fragment macro over that
+  native contract.
+
+Both native packages are directly usable from Odin without Kvist. See
+[the language and package architecture](Architecture.md) for the intended
+Odin authoring facade and the criterion for adding language-specific DSLs.
 
 ## Descriptions
 

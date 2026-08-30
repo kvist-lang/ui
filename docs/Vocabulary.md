@@ -1,8 +1,9 @@
 # Standard UI vocabulary
 
-Kvist UI descriptions use semantic, renderer-neutral names. A tag says what a
-node means to the application; the backend decides which native widget, DOM
-element, terminal region, or test instance realizes it.
+UI descriptions use semantic, renderer-neutral names. Whether produced by the
+Kvist Hiccup decoder or the Odin authoring API, a tag says what a node means to
+the application; the backend decides which native widget, DOM element,
+terminal region, or test instance realizes it.
 
 The decoder intentionally accepts any keyword tag and scalar properties. This
 keeps the package extensible: the vocabulary below is a portable convention,
