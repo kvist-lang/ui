@@ -1,0 +1,6 @@
+;; Copyright (c) Andreas Flakstad and Kvist contributors
+;; SPDX-License-Identifier: MIT
+
+(package ui-headless)
+
+;; Marker for the native headless backend subpackage.

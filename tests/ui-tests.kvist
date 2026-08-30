@@ -1,0 +1,124 @@
+;; Copyright (c) Andreas Flakstad and Kvist contributors
+;; SPDX-License-Identifier: MIT
+
+(package tests)
+
+(import t "kvist:test")
+(import headless "../headless")
+(import reconcile "../reconcile")
+(import ui "..")
+
+(defstruct Command {
+  id: string
+  label: string
+})
+
+(defn command-view [command: Command] -> Data
+  [:ui/command
+   {:key command.id
+    :label command.label
+    :on {:activate [:commands/accept command.id]}}])
+
+(t.deftest ui-decodes-keyed-props-actions-and-fragments
+  (let [commands (make [dynamic]Command)]
+    (defer (delete commands))
+    (append (addr commands) (Command {id: "open" label: "Open"}))
+    (append (addr commands) (Command {id: "close" label: "Close"}))
+    (let [[node err ok]
+            (ui.decode
+              [:ui/surface {:key :root :open? true}
+               nil
+               (ui.for [command: Command commands]
+                 (command-view command))])]
+      (defer (reconcile.decode-error-destroy (addr err)))
+      (defer (reconcile.node-destroy (addr node)))
+      (t.is ok)
+      (t.is (= node.tag ":ui/surface"))
+      (t.is (= (count node.children) 2))
+      (t.is (= node.children[0].key "open"))
+      (t.is (= (reconcile.node-text (addr node.children[1]) ":label")
+               "Close"))
+      (let [[action action-ok]
+              (reconcile.node-action
+                (addr node.children[0]) ":activate")]
+        (t.is action-ok)
+        (t.is (= action^.id ":commands/accept"))
+        (t.is (= action^.args[0].text "open"))))))
+
+(t.deftest ui-rejects-invalid-keyed-descriptions
+  (let [[missing missing-err missing-ok]
+          (ui.decode [:ui/text {:text "Missing key"}])
+        [duplicate duplicate-err duplicate-ok]
+          (ui.decode
+            [:ui/surface {:key :root}
+             [:ui/text {:key :same :text "First"}]
+             [:ui/text {:key :same :text "Second"}]])]
+    (defer (reconcile.decode-error-destroy (addr missing-err)))
+    (defer (reconcile.node-destroy (addr missing)))
+    (defer (reconcile.decode-error-destroy (addr duplicate-err)))
+    (defer (reconcile.node-destroy (addr duplicate)))
+    (t.is (not missing-ok))
+    (t.is (> (count missing-err.message) 0))
+    (t.is (not duplicate-ok))
+    (t.is (> (count duplicate-err.message) 0))))
+
+(t.deftest ui-headless-preserves-keys-and-resolves-event-values
+  (let [renderer (headless.Renderer {})]
+    (headless.renderer-init (addr renderer))
+    (defer (headless.renderer-destroy (addr renderer)))
+    (let [[first first-err first-ok]
+            (ui.decode
+              [:ui/surface {:key :root}
+               [:ui/text-field
+                {:key :query
+                 :value ""
+                 :on {:change [:query/set :event/value]}}]
+               [:ui/button {:key :submit :label "Run"}]])]
+      (defer (reconcile.decode-error-destroy (addr first-err)))
+      (defer (reconcile.node-destroy (addr first)))
+      (t.is first-ok)
+      (t.is
+        (headless.renderer-reconcile (addr renderer) (addr first)))
+      (t.is (headless.renderer-matches (addr renderer) (addr first)))
+      (let [[query-id query-found]
+              (headless.renderer-instance-id (addr renderer) ":query")
+            [submit-id submit-found]
+              (headless.renderer-instance-id (addr renderer) ":submit")]
+        (t.is query-found)
+        (t.is submit-found)
+        (let [[next next-err next-ok]
+                (ui.decode
+                  [:ui/surface {:key :root}
+                   [:ui/button {:key :submit :label "Run"}]
+                   [:ui/text-field
+                    {:key :query
+                     :value "go"
+                     :on {:change [:query/set :event/value]}}]
+                   [:ui/text {:key :detail :text "One result"}]])]
+          (defer (reconcile.decode-error-destroy (addr next-err)))
+          (defer (reconcile.node-destroy (addr next)))
+          (t.is next-ok)
+          (t.is
+            (headless.renderer-reconcile (addr renderer) (addr next)))
+          (t.is (headless.renderer-matches (addr renderer) (addr next)))
+          (let [[next-query-id next-query-found]
+                  (headless.renderer-instance-id (addr renderer) ":query")
+                [next-submit-id next-submit-found]
+                  (headless.renderer-instance-id (addr renderer) ":submit")
+                stats (headless.renderer-stats (addr renderer))]
+            (t.is next-query-found)
+            (t.is next-submit-found)
+            (t.is (= next-query-id query-id))
+            (t.is (= next-submit-id submit-id))
+            (t.is (= stats.created 1))
+            (t.is (= stats.applied 1))
+            (t.is (= stats.inserted 1))
+            (t.is (= stats.moved 1)))
+          (let [payload (reconcile.Value {kind: .Text text: "go"})
+                [action action-ok]
+                  (headless.renderer-emit
+                    (addr renderer) ":query" ":change" (addr payload))]
+            (defer (reconcile.action-destroy (addr action)))
+            (t.is action-ok)
+            (t.is (= action.id ":query/set"))
+            (t.is (= action.args[0].text "go"))))))))

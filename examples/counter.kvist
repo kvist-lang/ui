@@ -1,0 +1,23 @@
+;; Copyright (c) Andreas Flakstad and Kvist contributors
+;; SPDX-License-Identifier: MIT
+
+(package counter)
+
+(import reconcile "../reconcile")
+(import ui "..")
+
+(defn counter-view [label: string] -> Data
+  [:ui/vstack {:key :counter :gap :control}
+   [:ui/text {:key :value :text label}]
+   [:ui/button
+    {:key :increment
+     :label "Increment"
+     :on {:activate [:counter/increment]}}]])
+
+(defn main []
+  (let [[node err ok] (ui.decode (counter-view "0"))]
+    (defer (reconcile.decode-error-destroy (addr err)))
+    (defer (reconcile.node-destroy (addr node)))
+    (if ok
+      (println node.tag)
+      (println err.message))))
