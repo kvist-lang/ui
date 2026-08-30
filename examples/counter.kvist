@@ -7,7 +7,7 @@
 (import ui "..")
 
 (defn counter-view [label: string] -> Data
-  [:ui/vstack {:key :counter :gap :control}
+  [:ui/stack {:key :counter :orientation :vertical :gap :control}
    [:ui/text {:key :value :text label}]
    [:ui/button
     {:key :increment

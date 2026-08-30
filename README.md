@@ -21,7 +21,9 @@ tests and platform-free consumers. Product state, action interpretation,
 scheduling, effects, layout, and platform widget registries remain application
 concerns.
 
-See [the UI guide](docs/UI.md). Run the tests with:
+See [the UI guide](docs/UI.md) and
+[the renderer-neutral standard vocabulary](docs/Vocabulary.md). Run the tests
+with:
 
 ```sh
 kvist test tests/ui-tests.kvist --track-memory

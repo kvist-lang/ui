@@ -45,6 +45,26 @@
         (t.is (= action^.id ":commands/accept"))
         (t.is (= action^.args[0].text "open"))))))
 
+(t.deftest ui-standard-vocabulary-remains-ordinary-renderer-neutral-data
+  (let [[node err ok]
+          (ui.decode
+            [:ui/dialog {:key :preferences :open? true}
+             [:ui/stack {:key :content :orientation :vertical :gap :content}
+              [:ui/text {:key :title :text "Preferences"}]
+              [:ui/text-editor
+               {:key :notes
+                :value ""
+                :on {:change [:preferences/set-notes :event/value]}}]]])]
+    (defer (reconcile.decode-error-destroy (addr err)))
+    (defer (reconcile.node-destroy (addr node)))
+    (t.is ok)
+    (t.is (= node.tag ":ui/dialog"))
+    (t.is (= node.children[0].tag ":ui/stack"))
+    (t.is
+      (= (reconcile.node-text (addr node.children[0]) ":orientation")
+         ":vertical"))
+    (t.is (= node.children[0].children[1].tag ":ui/text-editor"))))
+
 (t.deftest ui-rejects-invalid-keyed-descriptions
   (let [[missing missing-err missing-ok]
           (ui.decode [:ui/text {:text "Missing key"}])

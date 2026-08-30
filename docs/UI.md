@@ -21,7 +21,7 @@ View functions return ordinary immutable `Data`:
 (import ui "deps/ui")
 
 (defn counter-view [label: string] -> Data
-  [:ui/vstack {:key :counter :gap :control}
+  [:ui/stack {:key :counter :orientation :vertical :gap :control}
    [:ui/text {:key :value :text label}]
    [:ui/button
     {:key :increment
@@ -32,6 +32,10 @@ View functions return ordinary immutable `Data`:
 Every node has an explicit key. Sibling keys must be unique. A stable key and
 tag preserve the mounted instance across content changes and reorderings.
 Events are semantic action vectors rather than closures over renderer state.
+Tags and properties are renderer-neutral vocabulary. For example, a backend
+may realize `:ui/dialog` as an AppKit sheet, a GTK window, a terminal overlay,
+or an accessible web dialog. See [the standard vocabulary](Vocabulary.md) for
+the portable names applications and reusable backends should share.
 
 Use the reserved `:event/value` scalar when a backend must supply an event
 payload:
