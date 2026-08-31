@@ -169,29 +169,16 @@ decode_error_destroy :: proc(err: ^Decode_Error) {
 
 properties_equal :: proc(left, right: []Property) -> bool {
 	if len(left) != len(right) do return false
-	if len(left) < 16 {
-		for property in left {
-			found := false
-			for candidate in right {
-				if candidate.name == property.name {
-					if !value_equal(property.value, candidate.value) do return false
-					found = true
-					break
-				}
-			}
-			if !found do return false
-		}
-		return true
-	}
-	right_by_name := make(map[string]int, len(right))
-	defer delete(right_by_name)
-	for property, index in right do right_by_name[property.name] = index
 	for property in left {
-		candidate_index, found := right_by_name[property.name]
-		if !found ||
-		   !value_equal(property.value, right[candidate_index].value) {
-			return false
+		found := false
+		for candidate in right {
+			if candidate.name == property.name {
+				if !value_equal(property.value, candidate.value) do return false
+				found = true
+				break
+			}
 		}
+		if !found do return false
 	}
 	return true
 }

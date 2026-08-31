@@ -164,7 +164,9 @@ large_tree_uses_the_indexed_duplicate_key_path :: proc(t: ^testing.T) {
 }
 
 @(test)
-large_property_sets_use_indexed_equality_and_validation :: proc(t: ^testing.T) {
+large_property_sets_preserve_equality_and_use_indexed_validation :: proc(
+	t: ^testing.T,
+) {
 	left := make([dynamic]Property, 0, 24)
 	right := make([dynamic]Property, 0, 24)
 	defer {
