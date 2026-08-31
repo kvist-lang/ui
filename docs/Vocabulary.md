@@ -20,7 +20,7 @@ from `reconcile/vocabulary.odin`; their values are the same strings shown here.
 | `:ui/drawer` | A panel attached to an application edge or flow | `:open?`, `:title`, `:help` |
 | `:ui/stack` | Ordered layout along one axis | `:orientation` (`:vertical` or `:horizontal`), `:gap`, `:align`, `:grow?` on children |
 | `:ui/spacer` | Flexible or fixed separation | `:size` |
-| `:ui/text` | Read-only textual content | `:text`, `:role`, `:style`, `:wrap?`, `:selectable?` |
+| `:ui/text` | Read-only textual content | `:text`, `:role`, `:tone`, `:style`, `:wrap?`, `:selectable?` |
 | `:ui/validation-message` | Validation feedback associated with input | `:text`, `:invalid?` |
 
 `:ui/dialog` deliberately does not say “sheet”, “window”, or “popover”. Those
@@ -72,11 +72,16 @@ rows while preserving the same data and actions.
 
 - Every node has a stable, explicit `:key`; sibling keys are unique.
 - `:enabled?`, `:required?`, and `:open?` are booleans.
-- `:align` uses `:start`, `:center`, or `:end`; `:grow?` lets a child consume
-  remaining layout space without naming a toolkit constraint API.
+- `:align` uses `:start`, `:center`, or `:end`; `:gap` uses semantic
+  `:compact`, `:control`, `:section`, or `:content` spacing; `:grow?` lets a
+  child consume remaining layout space without naming a toolkit constraint
+  API. Renderers choose the concrete measurements.
 - `:accessibility-label` supplies a spoken label when visible content is not
   sufficient.
 - Standard button roles are `:primary`, `:secondary`, and `:destructive`.
+- Standard text roles are `:body`, `:label`, `:metadata`, `:page-title`, and
+  `:section-title`. Text tone is orthogonal: `:foreground`, `:muted`, or
+  `:danger`. This lets renderers change typography and color independently.
 - Event names describe interaction (`:activate`, `:change`, `:select`,
   `:submit`, `:cancel`); action vectors describe product intent.
 - Renderer-specific needs belong in a renderer namespace, for example
