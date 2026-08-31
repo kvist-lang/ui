@@ -310,11 +310,12 @@ node_valid :: proc(node: ^Node) -> bool {
 			if candidate.event == action.event do return false
 		}
 	}
-	for &child, index in node.children {
+	child_keys := make(
+		map[string]bool, len(node.children), context.temp_allocator)
+	for &child in node.children {
 		if !node_valid(&child) do return false
-		for &candidate in node.children[index + 1:] {
-			if candidate.key == child.key do return false
-		}
+		if child.key in child_keys do return false
+		child_keys[child.key] = true
 	}
 	return true
 }

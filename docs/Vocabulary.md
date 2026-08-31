@@ -68,6 +68,19 @@ The description is logical, not an instruction to allocate one native widget
 per command. A backend may virtualize a command list and query only visible
 rows while preserving the same data and actions.
 
+## Trees and outlines
+
+| Tag | Meaning | Common properties and events |
+| --- | --- | --- |
+| `:ui/tree` | Hierarchical, optionally virtualized collection | `:selected-key`, `:focus-key` |
+| `:ui/tree-item` | One visible item in a tree | `:label`, `:detail`, `:depth`, `:expandable?`, `:expanded?`, `:checkable?`, `:checked?`, `:enabled?` |
+
+A tree description may be structurally nested or expose its currently visible
+items as flat keyed children carrying `:depth`. The latter fits native virtual
+tables and terminal lists without requiring a widget per logical item.
+Expansion and checking remain explicit events such as `:toggle-expanded` and
+`:toggle-checked`; their action data determines product behavior.
+
 ## Shared conventions
 
 - Every node has a stable, explicit `:key`; sibling keys are unique.

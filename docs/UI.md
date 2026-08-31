@@ -186,11 +186,11 @@ tree matching make lifecycle behavior observable without a platform toolkit.
 
 ## Performance boundary
 
-Key validation and sibling lookup are intentionally simple in the initial
-contract and become nonlinear for very large flat trees. Keep large product
-collections behind native virtualization or windowing. The description API
-does not imply allocating a native widget for every item in a large logical
-collection.
+Sibling-key validation is linear in the number of children. Ordinary unchanged
+and append-heavy reconciliation is likewise linear; adversarial reordering can
+still require many ordered moves. Keep large product collections behind native
+virtualization or windowing. The description API does not imply allocating a
+native widget for every item in a large logical collection.
 
 The repository includes a repeatable native microbenchmark for description
 construction and keyed reconciliation:
