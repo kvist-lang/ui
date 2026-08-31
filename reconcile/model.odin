@@ -169,16 +169,29 @@ decode_error_destroy :: proc(err: ^Decode_Error) {
 
 properties_equal :: proc(left, right: []Property) -> bool {
 	if len(left) != len(right) do return false
-	for property in left {
-		found := false
-		for candidate in right {
-			if candidate.name == property.name {
-				if !value_equal(property.value, candidate.value) do return false
-				found = true
-				break
+	if len(left) < 16 {
+		for property in left {
+			found := false
+			for candidate in right {
+				if candidate.name == property.name {
+					if !value_equal(property.value, candidate.value) do return false
+					found = true
+					break
+				}
 			}
+			if !found do return false
 		}
-		if !found do return false
+		return true
+	}
+	right_by_name := make(map[string]int, len(right))
+	defer delete(right_by_name)
+	for property, index in right do right_by_name[property.name] = index
+	for property in left {
+		candidate_index, found := right_by_name[property.name]
+		if !found ||
+		   !value_equal(property.value, right[candidate_index].value) {
+			return false
+		}
 	}
 	return true
 }
@@ -298,10 +311,21 @@ node_resolve_action :: proc(
 
 node_valid :: proc(node: ^Node) -> bool {
 	if node == nil || len(node.tag) == 0 || len(node.key) == 0 do return false
-	for property, index in node.props {
-		if len(property.name) == 0 do return false
-		for candidate in node.props[index + 1:] {
-			if candidate.name == property.name do return false
+	if len(node.props) < 16 {
+		for property, index in node.props {
+			if len(property.name) == 0 do return false
+			for candidate in node.props[index + 1:] {
+				if candidate.name == property.name do return false
+			}
+		}
+	} else {
+		property_names := make(map[string]bool, len(node.props))
+		defer delete(property_names)
+		for property in node.props {
+			if len(property.name) == 0 || property.name in property_names {
+				return false
+			}
+			property_names[property.name] = true
 		}
 	}
 	for action, index in node.actions {

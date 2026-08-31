@@ -44,35 +44,30 @@
      message: (native-strings.clone message)}))
 
 (defn- decode-value
-  [value: Data, path: string]
-  -> [decoded: reconcile.Value, error: reconcile.Decode-Error, ok: bool]
+  [value: Data]
+  -> [decoded: reconcile.Value, ok: bool]
   (cond
     (data.nil? value)
-      (return (reconcile.Value {kind: .None}) (reconcile.Decode-Error {}) true)
+      (return (reconcile.Value {kind: .None}) true)
     (data.bool? value)
-      (return (reconcile.Value {kind: .Bool bool-value: (data.bool value)})
-        (reconcile.Decode-Error {}) true)
+      (return (reconcile.Value {kind: .Bool bool-value: (data.bool value)}) true)
     (data.int? value)
-      (return (reconcile.Value {kind: .Int int-value: (data.int value)})
-        (reconcile.Decode-Error {}) true)
+      (return (reconcile.Value {kind: .Int int-value: (data.int value)}) true)
     (data.float? value)
-      (return (reconcile.Value {kind: .Float float-value: (data.float value)})
-        (reconcile.Decode-Error {}) true)
+      (return (reconcile.Value {kind: .Float float-value: (data.float value)}) true)
     (data.string? value)
       (return
         (reconcile.Value
           {kind: .Text text: (native-strings.clone (data.string value))})
-        (reconcile.Decode-Error {}) true)
+        true)
     (data.keyword? value)
       (return
         (reconcile.Value
           {kind: .Keyword
            text: (native-strings.clone (data.keyword value))})
-        (reconcile.Decode-Error {}) true)
+        true)
     :else
-      (return (reconcile.Value {})
-        (decode-error path "property and action arguments must be scalar Data")
-        false)))
+      (return (reconcile.Value {}) false)))
 
 (defn- decode-action
   [event-key: Data, form: Data, path: string]
@@ -96,12 +91,15 @@
                id: (native-strings.clone (data.keyword action-id))
                args: (make [dynamic]reconcile.Value 0 (- (count form) 1))})]
       (for [index (arr.range 1 (count form))]
-        (let [argument-path (fmt.aprintf "%s[%d]" path index)
-              [value err ok] (decode-value (data.nth form index) argument-path)]
-          (delete argument-path)
+        (let [[value ok] (decode-value (data.nth form index))]
           (when (not ok)
             (reconcile.action-destroy (addr action))
-            (return (reconcile.Action {}) err false))
+            (let [argument-path (fmt.aprintf "%s[%d]" path index)
+                  err
+                    (decode-error argument-path
+                      "property and action arguments must be scalar Data")]
+              (delete argument-path)
+              (return (reconcile.Action {}) err false)))
           (append (addr action.args) value)))
       (return action (reconcile.Decode-Error {}) true))))
 
@@ -166,9 +164,10 @@
             (reconcile.Node
               {tag: (native-strings.clone tag)
                key: key
-               props: (make [dynamic]reconcile.Property)
-               actions: (make [dynamic]reconcile.Action)
-               children: (make [dynamic]reconcile.Node)})]
+               props: (make [dynamic]reconcile.Property 0 (count props))
+               actions: (make [dynamic]reconcile.Action 0 (count props))
+               children:
+                 (make [dynamic]reconcile.Node 0 (- (count form) child-start))})]
       (when (= (count node.key) 0)
         (reconcile.node-destroy (addr node))
         (return (reconcile.Node {})
@@ -206,13 +205,15 @@
                         (return (reconcile.Node {}) err false))
                       (append (addr node.actions) action))))
               :else
-                (let [property-path (fmt.aprintf "%s.%s" path name)
-                      [value err ok]
-                        (decode-value property-value property-path)]
-                  (delete property-path)
+                (let [[value ok] (decode-value property-value)]
                   (when (not ok)
                     (reconcile.node-destroy (addr node))
-                    (return (reconcile.Node {}) err false))
+                    (let [property-path (fmt.aprintf "%s.%s" path name)
+                          err
+                            (decode-error property-path
+                              "property and action arguments must be scalar Data")]
+                      (delete property-path)
+                      (return (reconcile.Node {}) err false)))
                   (append (addr node.props)
                     (reconcile.Property
                       {name: (native-strings.clone name)

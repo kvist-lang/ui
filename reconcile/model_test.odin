@@ -164,6 +164,35 @@ large_tree_uses_the_indexed_duplicate_key_path :: proc(t: ^testing.T) {
 }
 
 @(test)
+large_property_sets_use_indexed_equality_and_validation :: proc(t: ^testing.T) {
+	left := make([dynamic]Property, 0, 24)
+	right := make([dynamic]Property, 0, 24)
+	defer {
+		for &property in left do delete(property.name)
+		for &property in right do delete(property.name)
+		delete(left)
+		delete(right)
+	}
+	for index in 0..<24 {
+		append(&left, Property{
+			name = fmt.aprintf(":property-%d", index),
+			value = {kind = .Int, int_value = i64(index)},
+		})
+		reversed := 23 - index
+		append(&right, Property{
+			name = fmt.aprintf(":property-%d", reversed),
+			value = {kind = .Int, int_value = i64(reversed)},
+		})
+	}
+	testing.expect(t, properties_equal(left[:], right[:]))
+	node := Node{tag = ":ui/tree-item", key = ":row", props = left}
+	testing.expect(t, node_valid(&node))
+	delete(left[23].name)
+	left[23].name = fmt.aprintf(":property-0")
+	testing.expect(t, !node_valid(&node))
+}
+
+@(test)
 property_and_action_map_order_is_not_semantic :: proc(t: ^testing.T) {
 	left_args := [dynamic]Value{{kind = .Int, int_value = 1}}
 	defer delete(left_args)
