@@ -6,6 +6,7 @@
 package ui_reconcile
 
 // These tests exercise the backend contract without a platform toolkit.
+import "core:fmt"
 import "core:testing"
 
 Fake_Instance :: struct {
@@ -139,6 +140,27 @@ reconciliation_rejects_duplicate_sibling_keys :: proc(t: ^testing.T) {
 	node := Node{tag = ":surface", key = ":root", children = children}
 	testing.expect(t, !reconcile(&reconciler, &node))
 	testing.expect(t, reconciler.root == nil)
+}
+
+@(test)
+large_tree_uses_the_indexed_duplicate_key_path :: proc(t: ^testing.T) {
+	children := make([dynamic]Node, 0, 32)
+	defer {
+		for &child in children do delete(child.key)
+		delete(children)
+	}
+	for index in 0..<32 {
+		key := fmt.aprintf("row-%d", index)
+		if index == 31 {
+			delete(key)
+			key = fmt.aprintf("duplicate")
+		}
+		append(&children, Node{tag = ":ui/tree-item", key = key})
+	}
+	delete(children[0].key)
+	children[0].key = fmt.aprintf("duplicate")
+	root := Node{tag = ":ui/tree", key = ":tree", children = children}
+	testing.expect(t, !node_valid(&root))
 }
 
 @(test)

@@ -197,6 +197,7 @@ construction and keyed reconciliation:
 
 ```sh
 odin run benchmarks/builder -o:speed
+odin run benchmarks/flat-tree -o:speed
 ```
 
 It reports construction separately from construction plus reconciliation and

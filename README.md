@@ -57,3 +57,5 @@ odin run examples/odin-counter
 
 Run the allocation-and-reconciliation microbenchmark with
 `odin run benchmarks/builder -o:speed`.
+Large virtualized descriptions can be measured independently with
+`odin run benchmarks/flat-tree -o:speed`.
