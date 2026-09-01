@@ -5,10 +5,10 @@
 (import reconcile "../reconcile")
 (import ui "..")
 
-(defstruct Command {
+(defstruct Command [
   id: string
   label: string
-})
+])
 
 (defn command-view [command: Command] -> Data
   [:ui/command
@@ -19,8 +19,8 @@
 (t.deftest ui-decodes-keyed-props-actions-and-fragments
   (let [commands (make [dynamic]Command)]
     (defer (delete commands))
-    (append (addr commands) (Command {id: "open" label: "Open"}))
-    (append (addr commands) (Command {id: "close" label: "Close"}))
+    (append (addr commands) (Command :id "open" :label "Open"))
+    (append (addr commands) (Command :id "close" :label "Close"))
     (let [[node err ok]
             (ui.decode
               [:ui/surface {:key :root :open? true}
@@ -107,7 +107,7 @@
     (t.is (> (count duplicate-err.message) 0))))
 
 (t.deftest ui-headless-preserves-keys-and-resolves-event-values
-  (let [renderer (headless.Renderer {})]
+  (let [renderer (headless.Renderer [])]
     (headless.renderer-init (addr renderer))
     (defer (headless.renderer-destroy (addr renderer)))
     (let [[first first-err first-ok]
@@ -158,7 +158,7 @@
             (t.is (= stats.applied 1))
             (t.is (= stats.inserted 1))
             (t.is (= stats.moved 1)))
-          (let [payload (reconcile.Value {kind: .Text text: "go"})
+          (let [payload (reconcile.Value :kind .Text :text "go")
                 [action action-ok]
                   (headless.renderer-emit
                     (addr renderer) ":query" ":change" (addr payload))]

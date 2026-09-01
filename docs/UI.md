@@ -178,7 +178,7 @@ contract:
 ```clojure
 (import headless "deps/ui/headless")
 
-(let [renderer (headless.Renderer {})]
+(let [renderer (headless.Renderer [])]
   (headless.renderer-init (addr renderer))
   (defer (headless.renderer-destroy (addr renderer)))
   (headless.renderer-reconcile (addr renderer) (addr node))

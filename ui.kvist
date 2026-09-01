@@ -37,56 +37,56 @@
 
 (defn- decode-error [path: string, message: string] -> reconcile.Decode-Error
   (reconcile.Decode-Error
-    {path: (native-strings.clone path)
-     message: (native-strings.clone message)}))
+    :path (native-strings.clone path)
+     :message (native-strings.clone message)))
 
 (defn- decode-value
   [value: Data]
   -> [decoded: reconcile.Value, ok: bool]
   (cond
     (data.nil? value)
-      (return (reconcile.Value {kind: .None}) true)
+      (return (reconcile.Value :kind .None) true)
     (data.bool? value)
-      (return (reconcile.Value {kind: .Bool bool-value: (data.bool value)}) true)
+      (return (reconcile.Value :kind .Bool :bool-value (data.bool value)) true)
     (data.int? value)
-      (return (reconcile.Value {kind: .Int int-value: (data.int value)}) true)
+      (return (reconcile.Value :kind .Int :int-value (data.int value)) true)
     (data.float? value)
-      (return (reconcile.Value {kind: .Float float-value: (data.float value)}) true)
+      (return (reconcile.Value :kind .Float :float-value (data.float value)) true)
     (data.string? value)
       (return
         (reconcile.Value
-          {kind: .Text text: (native-strings.clone (data.string value))})
+          :kind .Text :text (native-strings.clone (data.string value)))
         true)
     (data.keyword? value)
       (return
         (reconcile.Value
-          {kind: .Keyword
-           text: (native-strings.clone (data.keyword value))})
+          :kind .Keyword
+           :text (native-strings.clone (data.keyword value)))
         true)
     :else
-      (return (reconcile.Value {}) false)))
+      (return (reconcile.Value []) false)))
 
 (defn- decode-action
   [event-key: Data, form: Data, path: string]
   -> [decoded: reconcile.Action, error: reconcile.Decode-Error, ok: bool]
   (if (not (data.keyword? event-key))
-    (return (reconcile.Action {})
+    (return (reconcile.Action [])
       (decode-error path "event names must be keywords") false))
   (if (not (data.vector? form))
-    (return (reconcile.Action {})
+    (return (reconcile.Action [])
       (decode-error path "event actions must be vectors") false))
   (if (= (count form) 0)
-    (return (reconcile.Action {})
+    (return (reconcile.Action [])
       (decode-error path "event actions must contain an action keyword") false))
   (let [action-id (data.nth form 0)]
     (if (not (data.keyword? action-id))
-      (return (reconcile.Action {})
+      (return (reconcile.Action [])
         (decode-error path "event action ids must be keywords") false))
     (let [action
             (reconcile.Action
-              {event: (native-strings.clone (data.keyword event-key))
-               id: (native-strings.clone (data.keyword action-id))
-               args: (make [dynamic]reconcile.Value 0 (- (count form) 1))})]
+              :event (native-strings.clone (data.keyword event-key))
+               :id (native-strings.clone (data.keyword action-id))
+               :args (make [dynamic]reconcile.Value 0 (- (count form) 1)))]
       (for [index (arr.range 1 (count form))]
         (let [[value ok] (decode-value (data.nth form index))]
           (when (not ok)
@@ -96,22 +96,22 @@
                     (decode-error argument-path
                       "property and action arguments must be scalar Data")]
               (delete argument-path)
-              (return (reconcile.Action {}) err false)))
+              (return (reconcile.Action []) err false)))
           (append (addr action.args) value)))
-      (return action (reconcile.Decode-Error {}) true))))
+      (return action (reconcile.Decode-Error []) true))))
 
 (defn- decode-child-form!
   [children: ^[dynamic]reconcile.Node, form: Data, path: string]
   -> [error: reconcile.Decode-Error, ok: bool]
   (cond
     (data.nil? form)
-      (return (reconcile.Decode-Error {}) true)
+      (return (reconcile.Decode-Error []) true)
     (and (data.vector? form) (> (count form) 0)
          (data.keyword? (data.nth form 0)))
       (let [[child err ok] (decode-node-at form path)]
         (when (not ok) (return err false))
         (append children child)
-        (return (reconcile.Decode-Error {}) true))
+        (return (reconcile.Decode-Error []) true))
     (data.vector? form)
       (do
         (for [index (arr.range 0 (count form))]
@@ -121,7 +121,7 @@
                     children (data.nth form index) nested-path)]
             (delete nested-path)
             (when (not ok) (return err false))))
-        (return (reconcile.Decode-Error {}) true))
+        (return (reconcile.Decode-Error []) true))
     :else
       (return
         (decode-error path
@@ -132,14 +132,14 @@
   [form: Data, path: string]
   -> [decoded: reconcile.Node, error: reconcile.Decode-Error, ok: bool]
   (if (not (data.vector? form))
-    (return (reconcile.Node {})
+    (return (reconcile.Node [])
       (decode-error path "UI nodes must be vectors") false))
   (if (= (count form) 0)
-    (return (reconcile.Node {})
+    (return (reconcile.Node [])
       (decode-error path "UI nodes must contain a tag") false))
   (let [tag-value (data.nth form 0)]
     (if (not (data.keyword? tag-value))
-      (return (reconcile.Node {})
+      (return (reconcile.Node [])
         (decode-error path "UI node tags must be keywords") false))
     (let [tag (data.keyword tag-value)
           second (data.nth form 1)
@@ -159,15 +159,15 @@
                 "")
           node
             (reconcile.Node
-              {tag: (native-strings.clone tag)
-               key: key
-               props: (make [dynamic]reconcile.Property 0 (count props))
-               actions: (make [dynamic]reconcile.Action 0 (count props))
-               children:
-                 (make [dynamic]reconcile.Node 0 (- (count form) child-start))})]
+              :tag (native-strings.clone tag)
+               :key key
+               :props (make [dynamic]reconcile.Property 0 (count props))
+               :actions (make [dynamic]reconcile.Action 0 (count props))
+               :children
+                 (make [dynamic]reconcile.Node 0 (- (count form) child-start)))]
       (when (= (count node.key) 0)
         (reconcile.node-destroy (addr node))
-        (return (reconcile.Node {})
+        (return (reconcile.Node [])
           (decode-error path "every UI node must declare an explicit :key")
           false))
       (for [index (arr.range 0 (count props))]
@@ -176,7 +176,7 @@
           (if (not (data.keyword? property-key))
             (do
               (reconcile.node-destroy (addr node))
-              (return (reconcile.Node {})
+              (return (reconcile.Node [])
                 (decode-error path "UI property names must be keywords") false)))
           (let [name (data.keyword property-key)]
             (cond
@@ -186,7 +186,7 @@
                   (if (not (data.map? property-value))
                     (do
                       (reconcile.node-destroy (addr node))
-                      (return (reconcile.Node {})
+                      (return (reconcile.Node [])
                         (decode-error path ":on must be a map") false)))
                   (for [event-index (arr.range 0 (count property-value))]
                     (let [event-path
@@ -199,7 +199,7 @@
                       (delete event-path)
                       (when (not ok)
                         (reconcile.node-destroy (addr node))
-                        (return (reconcile.Node {}) err false))
+                        (return (reconcile.Node []) err false))
                       (append (addr node.actions) action))))
               :else
                 (let [[value ok] (decode-value property-value)]
@@ -210,11 +210,11 @@
                             (decode-error property-path
                               "property and action arguments must be scalar Data")]
                       (delete property-path)
-                      (return (reconcile.Node {}) err false)))
+                      (return (reconcile.Node []) err false)))
                   (append (addr node.props)
                     (reconcile.Property
-                      {name: (native-strings.clone name)
-                       value: value})))))))
+                      :name (native-strings.clone name)
+                       :value value)))))))
       (for [index (arr.range child-start (count form))]
         (let [child-path (fmt.aprintf "%s[%d]" path index)
               [err ok]
@@ -223,15 +223,15 @@
           (delete child-path)
           (when (not ok)
             (reconcile.node-destroy (addr node))
-            (return (reconcile.Node {}) err false))))
+            (return (reconcile.Node []) err false))))
       (if (not (reconcile.node-valid (addr node)))
         (do
           (reconcile.node-destroy (addr node))
-          (return (reconcile.Node {})
+          (return (reconcile.Node [])
             (decode-error path
               "UI keys, property names, and event names must be unique")
             false)))
-      (return node (reconcile.Decode-Error {}) true))))
+      (return node (reconcile.Decode-Error []) true))))
 
 (defn decode
   "Decode one Replicant-shaped Hiccup Data tree into an owned native Node."
