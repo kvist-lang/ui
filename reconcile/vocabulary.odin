@@ -12,6 +12,7 @@ TAG_VALIDATION_MESSAGE :: ":ui/validation-message"
 TAG_BUTTON             :: ":ui/button"
 TAG_TEXT_FIELD         :: ":ui/text-field"
 TAG_TEXT_EDITOR        :: ":ui/text-editor"
+TAG_DOCUMENT_EDITOR    :: ":ui/document-editor"
 TAG_TOGGLE_FIELD       :: ":ui/toggle-field"
 TAG_DATE_FIELD         :: ":ui/date-field"
 TAG_CHOICE_FIELD       :: ":ui/choice-field"
@@ -33,7 +34,9 @@ PROP_ENABLED             :: ":enabled?"
 PROP_EXPANDED            :: ":expanded?"
 PROP_EXPANDABLE          :: ":expandable?"
 PROP_EVENT_VALUE_KEY     :: ":event-value-key"
+PROP_FALLBACK_TEXT       :: ":fallback-text"
 PROP_FOCUS_KEY           :: ":focus-key"
+PROP_FORMAT              :: ":format"
 PROP_GAP                 :: ":gap"
 PROP_GROW                :: ":grow?"
 PROP_HELP                :: ":help"
@@ -96,3 +99,7 @@ EVENT_SUBMIT   :: ":submit"
 
 // Renderer-provided payload placeholder used in action argument data.
 EVENT_VALUE :: ":event/value"
+
+// The first portable semantic-document encoding. The document package owns
+// its schema and transformations; renderers only implement formats they know.
+DOCUMENT_FORMAT_SEMANTIC_V1 :: ":ui.document/semantic-v1"

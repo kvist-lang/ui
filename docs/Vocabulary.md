@@ -35,6 +35,7 @@ classes in the tag set.
 | `:ui/button` | An activatable action | `:label`, `:enabled?`, `:role`, `:event-value-key`, `:on {:activate ...}` |
 | `:ui/text-field` | Single-line text input | `:value` or `:default-value`, `:placeholder`, `:on {:change ...}` |
 | `:ui/text-editor` | Multi-line text editing | `:value` or `:default-value`, `:placeholder`, `:on {:change ...}` |
+| `:ui/document-editor` | Structured document editing | encoded `:value` or `:default-value`, `:format`, `:fallback-text`, `:on {:change ... :submit ...}` |
 | `:ui/toggle-field` | Boolean input | boolean `:value` or `:default-value`, `:label`, `:on {:change ...}` |
 | `:ui/date-field` | Date or instant input | `:value` or `:default-value`, `:include-time?`, `:time-optional?`, `:required?`, `:label`, `:on {:change ...}` |
 | `:ui/choice-field` | Selection from a bounded set | `:value`, `:label`, `:on {:change ...}` |
@@ -44,6 +45,16 @@ classes in the tag set.
 Use `:value` for controlled state. Use `:default-value` when the backend owns
 ephemeral editing state such as text composition, selection, undo, or calendar
 interaction until it emits an action.
+
+For `:ui/document-editor`, the value is one encoded canonical document, not a
+renderer-owned attributed string or a compound event payload. `:format`
+identifies the encoding; the initial shared format is
+`:ui.document/semantic-v1`. `:fallback-text` lets a renderer construct a
+document when the encoded value is absent or invalid. A renderer must preserve
+the declared format and emits the updated encoded document as `:event/value`;
+the application may derive plain text, search text, or previews through the
+corresponding portable document codec. Selection, composition, undo, and
+presentation remain ephemeral renderer state.
 
 For `:ui/date-field`, `:include-time?` selects the initial date-time mode.
 `:time-optional? true` lets the person switch between a date and an instant

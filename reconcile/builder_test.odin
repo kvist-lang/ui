@@ -95,6 +95,26 @@ builder_authors_optional_time_as_portable_date_data :: proc(t: ^testing.T) {
 }
 
 @(test)
+document_editor_uses_an_explicit_portable_format :: proc(t: ^testing.T) {
+	builder: Builder
+	builder_init(&builder)
+	defer builder_destroy(&builder)
+
+	editor := node(&builder, TAG_DOCUMENT_EDITOR, "brief", {
+		props = []Property_Spec{
+			property(PROP_DEFAULT_VALUE, text("{\"version\":1}")),
+			property(PROP_FALLBACK_TEXT, text("Brief")),
+			property(PROP_FORMAT, keyword(DOCUMENT_FORMAT_SEMANTIC_V1)),
+		},
+	})
+
+	testing.expect_value(t, editor.tag, TAG_DOCUMENT_EDITOR)
+	testing.expect_value(
+		t, node_text(&editor, PROP_FORMAT), DOCUMENT_FORMAT_SEMANTIC_V1)
+	testing.expect_value(t, node_text(&editor, PROP_FALLBACK_TEXT), "Brief")
+}
+
+@(test)
 builder_reset_supports_the_render_reconcile_reset_loop :: proc(t: ^testing.T) {
 	builder: Builder
 	builder_init(&builder)

@@ -57,6 +57,12 @@ a backend-owned editable value, allowing a native backend to preserve text
 composition, selection, undo, calendar interaction, and similar ephemeral
 state until it emits a semantic action.
 
+Structured editors use the same scalar boundary. A `:ui/document-editor`
+declares an encoded `:value` or `:default-value`, its `:format`, and optional
+`:fallback-text`; the renderer emits the updated encoded document through
+`:event/value`. The portable document codec—not the renderer or UI core—owns
+validation and derived plain text.
+
 `ui.for` maps a native collection to a child fragment without mounting an
 extra wrapper:
 
