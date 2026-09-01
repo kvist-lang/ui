@@ -1,6 +1,3 @@
-// Copyright (c) Andreas Flakstad and Kvist contributors
-// SPDX-License-Identifier: MIT
-
 package odin_counter
 
 import "core:fmt"

@@ -1,7 +1,5 @@
 #+feature dynamic-literals
 
-// Copyright (c) Andreas Flakstad and Kvist contributors
-// SPDX-License-Identifier: MIT
 
 package ui_headless
 

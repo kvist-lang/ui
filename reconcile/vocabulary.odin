@@ -1,6 +1,3 @@
-// Copyright (c) Andreas Flakstad and Kvist contributors
-// SPDX-License-Identifier: MIT
-
 package ui_reconcile
 
 // Renderer-neutral standard tags. Tags remain strings rather than a closed
