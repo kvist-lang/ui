@@ -49,7 +49,11 @@
   (let [[node err ok]
           (ui.decode
             [:ui/dialog {:key :preferences :open? true}
-             [:ui/stack {:key :content :orientation :vertical :gap :content}
+             [:ui/stack
+              {:key :content
+               :orientation :vertical
+               :align :stretch
+               :gap :content}
               [:ui/text {:key :title :text "Preferences"}]
               [:ui/text-editor
                {:key :notes
@@ -63,6 +67,9 @@
     (t.is
       (= (reconcile.node-text (addr node.children[0]) ":orientation")
          ":vertical"))
+    (t.is
+      (= (reconcile.node-text (addr node.children[0]) ":align")
+         ":stretch"))
     (t.is (= node.children[0].children[1].tag ":ui/text-editor"))))
 
 (t.deftest ui-rejects-invalid-keyed-descriptions

@@ -19,7 +19,7 @@ from `reconcile/vocabulary.odin`; their values are the same strings shown here.
 | `:ui/dialog` | A transient dialog surface | `:open?`, `:title`, `:help` |
 | `:ui/drawer` | A panel attached to an application edge or flow | `:open?`, `:title`, `:help` |
 | `:ui/stack` | Ordered layout along one axis | `:orientation` (`:vertical` or `:horizontal`), `:gap`, `:align`, `:grow?` on children |
-| `:ui/spacer` | Flexible or fixed separation | `:size` |
+| `:ui/spacer` | Flexible or fixed separation | `:size`, `:grow?` |
 | `:ui/text` | Read-only textual content | `:text`, `:role`, `:tone`, `:style`, `:wrap?`, `:selectable?` |
 | `:ui/validation-message` | Validation feedback associated with input | `:text`, `:invalid?` |
 
@@ -39,7 +39,7 @@ classes in the tag set.
 | `:ui/date-field` | Date or instant input | `:value` or `:default-value`, `:include-time?`, `:required?`, `:label`, `:on {:change ...}` |
 | `:ui/choice-field` | Selection from a bounded set | `:value`, `:label`, `:on {:change ...}` |
 | `:ui/option` | One choice within a choice field | `:value`, `:label`, `:enabled?` |
-| `:ui/form-actions` | Semantic group of form actions | child buttons |
+| `:ui/form-actions` | Trailing-aligned semantic group of form actions | child buttons; a growing `:ui/spacer` may separate leading and trailing actions |
 
 Use `:value` for controlled state. Use `:default-value` when the backend owns
 ephemeral editing state such as text composition, selection, undo, or calendar
@@ -85,7 +85,8 @@ Expansion and checking remain explicit events such as `:toggle-expanded` and
 
 - Every node has a stable, explicit `:key`; sibling keys are unique.
 - `:enabled?`, `:required?`, and `:open?` are booleans.
-- `:align` uses `:start`, `:center`, or `:end`; `:gap` uses semantic
+- `:align` uses `:start`, `:center`, `:end`, or `:stretch`; `:stretch` fills
+  the cross axis without prescribing platform constraints. `:gap` uses semantic
   `:compact`, `:control`, `:section`, or `:content` spacing; `:grow?` lets a
   child consume remaining layout space without naming a toolkit constraint
   API. Renderers choose the concrete measurements.

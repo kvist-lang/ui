@@ -67,6 +67,7 @@ ORIENTATION_VERTICAL   :: ":vertical"
 ALIGN_START  :: ":start"
 ALIGN_CENTER :: ":center"
 ALIGN_END    :: ":end"
+ALIGN_STRETCH :: ":stretch"
 
 GAP_COMPACT :: ":compact"
 GAP_CONTROL :: ":control"
