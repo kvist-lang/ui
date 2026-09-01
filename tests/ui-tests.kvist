@@ -55,7 +55,13 @@
               [:ui/text-editor
                {:key :notes
                 :value ""
-                :on {:change [:preferences/set-notes :event/value]}}]]])]
+                :on {:change [:preferences/set-notes :event/value]}}]
+              [:ui/date-field
+               {:key :review-date
+                :default-value "2026-09-01"
+                :include-time? false
+                :time-optional? true
+                :required? false}]]])]
     (defer (reconcile.decode-error-destroy (addr err)))
     (defer (reconcile.node-destroy (addr node)))
     (t.is ok)
@@ -67,7 +73,11 @@
     (t.is
       (= (reconcile.node-text (addr node.children[0]) ":align")
          ":stretch"))
-    (t.is (= node.children[0].children[1].tag ":ui/text-editor"))))
+    (t.is (= node.children[0].children[1].tag ":ui/text-editor"))
+    (t.is (= node.children[0].children[2].tag ":ui/date-field"))
+    (t.is
+      (reconcile.node-bool
+        (addr node.children[0].children[2]) ":time-optional?"))))
 
 (t.deftest ui-rejects-invalid-keyed-descriptions
   (let [[missing missing-err missing-ok]

@@ -76,6 +76,25 @@ builder_copies_borrowed_action_arguments :: proc(t: ^testing.T) {
 }
 
 @(test)
+builder_authors_optional_time_as_portable_date_data :: proc(t: ^testing.T) {
+	builder: Builder
+	builder_init(&builder)
+	defer builder_destroy(&builder)
+
+	field := node(&builder, TAG_DATE_FIELD, "review-date", {
+		props = []Property_Spec{
+			property(PROP_DEFAULT_VALUE, text("2026-09-01")),
+			property(PROP_INCLUDE_TIME, boolean(false)),
+			property(PROP_TIME_OPTIONAL, boolean(true)),
+			property(PROP_REQUIRED, boolean(false)),
+		},
+	})
+	testing.expect(t, node_valid(&field))
+	testing.expect(t, node_bool(&field, PROP_TIME_OPTIONAL))
+	testing.expect(t, !node_bool(&field, PROP_INCLUDE_TIME))
+}
+
+@(test)
 builder_reset_supports_the_render_reconcile_reset_loop :: proc(t: ^testing.T) {
 	builder: Builder
 	builder_init(&builder)

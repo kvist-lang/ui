@@ -36,7 +36,7 @@ classes in the tag set.
 | `:ui/text-field` | Single-line text input | `:value` or `:default-value`, `:placeholder`, `:on {:change ...}` |
 | `:ui/text-editor` | Multi-line text editing | `:value` or `:default-value`, `:placeholder`, `:on {:change ...}` |
 | `:ui/toggle-field` | Boolean input | boolean `:value` or `:default-value`, `:label`, `:on {:change ...}` |
-| `:ui/date-field` | Date or instant input | `:value` or `:default-value`, `:include-time?`, `:required?`, `:label`, `:on {:change ...}` |
+| `:ui/date-field` | Date or instant input | `:value` or `:default-value`, `:include-time?`, `:time-optional?`, `:required?`, `:label`, `:on {:change ...}` |
 | `:ui/choice-field` | Selection from a bounded set | `:value`, `:label`, `:on {:change ...}` |
 | `:ui/option` | One choice within a choice field | `:value`, `:label`, `:enabled?` |
 | `:ui/form-actions` | Trailing-aligned semantic group of form actions | child buttons; a growing `:ui/spacer` may separate leading and trailing actions |
@@ -44,6 +44,13 @@ classes in the tag set.
 Use `:value` for controlled state. Use `:default-value` when the backend owns
 ephemeral editing state such as text composition, selection, undo, or calendar
 interaction until it emits an action.
+
+For `:ui/date-field`, `:include-time?` selects the initial date-time mode.
+`:time-optional? true` lets the person switch between a date and an instant
+while editing; without it, the declared mode is fixed. These properties are
+orthogonal to `:required?`, which controls whether the date itself may be
+omitted. Backends should emit a date-only value when optional time is disabled
+and a date-time value when it is enabled.
 
 An action normally receives a native control's scalar value through
 `:event/value`. A separate action control may declare `:event-value-key` with
